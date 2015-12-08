@@ -7,15 +7,15 @@
 }
 
 .link {
-  stroke-opacity: .5;
+  stroke-opacity: .6;
   fill: none;
 }
     
 div.tooltip {	
     position: absolute;			
     text-align: center;			
-    width: 70px;					
-    height: 28px;					
+    width: 80px;					
+    height: 30px;					
     padding: 2px;				
     font: 12px sans-serif;		
     background: lightsteelblue;	
@@ -36,6 +36,15 @@ div.tooltip {
   border-radius: 2px;
 }
 
+.rect{
+  fill-opacity: 0.6;
+}
+
+.rect:hover{
+  fill-opacity: 1;
+}
+
+
 </style>
 <body>
     <h2>Brain connectivity matrix</h2>
@@ -43,6 +52,10 @@ div.tooltip {
     
 <script src="d3/d3.min.js"></script>
 <script>
+
+var colormapping = ["rgb(255,0,0)",  "rgb(255,85,0)", "rgb(255,170,0)",
+ "rgb(255,255,0)", "rgb(170,255,85)", "rgb(85,255,170)", "rgb(0,255,255)",
+"rgb(0,170,255)", "rgb(0,85,255)", "rgb(0,0,255)","rgb(0,0,170)"];
 
 var diameter = 960,
     radius = diameter / 2,
@@ -70,26 +83,41 @@ var splines = [];
 var svg = d3.select("body").append("svg")
     .attr("width", diameter)
     .attr("height", diameter)
-  .append("g")
+    .append("g")
     .attr("transform", "translate(" + radius + "," + radius + ")");
 d3.json("connectivity.json", function(error, classes) {
   if (error) throw error;
 
-  //var col = "rgb(0,0,255)";
-  //var r = d3.rgb(col);
+var svg2 =  d3.select("body").append("svg")
+	  .attr("width", 75)
+    .attr("height", 960)
+
+var colorBar = svg2.selectAll("rectangle")
+		  .data(colormapping)
+		  .enter()
+		  .append("rect");
+	      
+
+var rectAttributes = colorBar
+	      .attr("class", "rect")
+	      .attr("x", 20)
+	      .attr("y",function(d,i ){return i*50+215})
+	      .attr("width",50)
+	      .attr("height",function(d,i){ if(i==10) return 10;
+		  else return 50;})
+	      .attr("fill", function(d){return d});
+
   var nodes = cluster.nodes(packageHierarchy(classes)),
       links = packageImports(nodes);
  splines = bundle(links);
   var size = sizeMap(nodes);
   
-  var colormap = colorMap(size);
+  var colormap = colorMap(size,colormapping);
   var path = svg.selectAll(".link")
       .data(splines)
       .enter()
         .append("path")
       .attr("class", "link")
-      .attr("id","myPath")
-      //.attr("stroke-width", "10px")
       .attr("stroke-width", function(d, i) { return (size[i]*10) + "px"; })
       .attr("stroke",  function(d, i) { return d3.rgb(colormap[i]);
           var color = colorMap[i];
@@ -128,73 +156,57 @@ d3.json("connectivity.json", function(error, classes) {
     
 });
 
-d3.select(self.frameElement).style("height", diameter + "px");
-
-function linkIn(evt) {
-  console.log("linkIn");
-  evt.target.setAttributeNS(null, 'stroke', 'red');
-}    
- 
-function mMove(){
-
-     var m = d3.mouse(this);
-     d3.select("#myPath").select("title").text(m[1]);
-}
-    
-function colorMap(size) {
+d3.select(self.frameElement).style("height", diameter + "px");   
+     
+function colorMap(size,colormapping) {
   var colorMap = [];
   size.forEach(function(d) {
  
     if( (d > 0.0) && (d < 0.1) ){
-       var color = "rgb(0,0,255)";
+       var color = colormapping[9];
        colorMap.push(color)          
   }
     else if (  (d >= 0.1) && (d < 0.2)  ) {
-           var color = "rgb(0,85,255)";
+           var color = colormapping[8];
            colorMap.push(color)         
     }
     else if (  (d >= 0.2) && (d < 0.3)  ) {
-           var color = "rgb(0,170,255)";
+           var color = colormapping[7];
            colorMap.push(color)         
     } 
     else if (  (d >= 0.3) && (d < 0.4)  ) {
-           var color = "rgb(0,255,255)";
+           var color = colormapping[6];
            colorMap.push(color)         
     }
     else if (  (d >= 0.4) && (d < 0.5)  ) {
-           var color = "rgb(85,255,170)";
+           var color = colormapping[5];
            colorMap.push(color)         
     }
     else if (  (d >= 0.5) && (d < 0.6)  ) {
-           var color = "rgb(170,255,85)";
+           var color = colormapping[4];
            colorMap.push(color)         
     }
     else if (  (d >= 0.6) && (d < 0.7)  ) {
-           var color = "rgb(255,255,0)";
+           var color = colormapping[3];
            colorMap.push(color)         
     }
     else if (  (d >= 0.7) && (d < 0.8)  ) {
-           var color = "rgb(255,170,0)";
+           var color = colormapping[2];
            colorMap.push(color)         
     }
     else if (  (d >= 0.8) && (d < 0.9)  ) {
-           var color = "rgb(255,85,0)";
+           var color = colormapping[1];
            colorMap.push(color)         
     }
     else if (  (d >= 0.9) && (d <= 1.0)  ) {
-           var color = "rgb(255,0,0)";
+           var color = colormapping[0];
            colorMap.push(color)         
     }
     else {
-           var color = "rgb(0,0,170)";
+           var color = colormapping[10];
            colorMap.push(color) 
     }
 });
-    /*size.forEach(function(d) {
-    var color = "rgb(255,255,0)";
-    colorMap.push(color)
-    return colorMap;
-    });*/
         return colorMap;
 }
     
