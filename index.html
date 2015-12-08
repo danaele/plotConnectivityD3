@@ -11,6 +11,18 @@
   fill: none;
 }
     
+div.tooltip {	
+    position: absolute;			
+    text-align: center;			
+    width: 70px;					
+    height: 28px;					
+    padding: 2px;				
+    font: 12px sans-serif;		
+    background: lightsteelblue;	
+    border: 0px;		
+    border-radius: 8px;			
+    pointer-events: none;			
+}
     
 .link:hover{
         stroke-opacity:1;
@@ -28,6 +40,7 @@
 <body>
     <h2>Brain connectivity matrix</h2>
     <div style="position:relative;bottom:0;font-size:18px;">Tension: <input style="position:relative;top:3px;" type="range" min="0" max="100" value="85"></div>
+    
 <script src="d3/d3.min.js"></script>
 <script>
 
@@ -48,7 +61,10 @@ var line = d3.svg.line.radial()
     .radius(function(d) { return d.y; })
     .angle(function(d) { return d.x / 180 * Math.PI; });
 
-
+// Define the div for the tooltip
+var div = d3.select("body").append("div")	
+    .attr("class", "tooltip")				
+    .style("opacity", 0);
 
 var splines = [];    
 var svg = d3.select("body").append("svg")
@@ -79,6 +95,19 @@ d3.json("connectivity.json", function(error, classes) {
           var color = colorMap[i];
            var rgb = d3.rgb(color); })            
       .attr("d", line)
+      .on("mouseover", function(d,i) {		
+            div.transition()		
+                .duration(200)		
+                .style("opacity", .9);		
+            div.html( "Connectivity value : " + size[i] )	
+                .style("left", (d3.event.pageX) + "px")		
+                .style("top", (d3.event.pageY + 28) + "px");	
+            })					
+        .on("mouseout", function(d) {		
+            div.transition()		
+                .duration(500)		
+                .style("opacity", 0);	
+        })
       ;
 
   svg.selectAll(".node")
